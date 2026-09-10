@@ -88,4 +88,15 @@ public class AuthController {
         boolean available = authService.isUsernameAvailable(username);
         return ResponseEntity.ok(Map.of("available", available));
     }
+
+    /**
+     * Public endpoint – no authentication required.
+     * Returns {"available": true} when the email is not yet registered, {"available": false} when taken.
+     * Check is case-insensitive (user@email.com == User@Email.com).
+     */
+    @GetMapping("/check-email")
+    public ResponseEntity<Map<String, Boolean>> checkEmail(@RequestParam String email) {
+        boolean available = authService.isEmailAvailable(email);
+        return ResponseEntity.ok(Map.of("available", available));
+    }
 }

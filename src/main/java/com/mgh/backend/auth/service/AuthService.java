@@ -83,7 +83,15 @@ public class AuthService {
             fullName = dto.getUsername();
         }
 
-        // ── 3. Create UserAuth ───────────────────────────────────────────────
+        // ── 3. Guard: enforce uniqueness for username and email ──────────────
+        if (userAuthRepo.existsByUsernameIgnoreCase(dto.getUsername())) {
+            throw new IllegalArgumentException("Username is already taken.");
+        }
+        if (userAuthRepo.existsByEmailIgnoreCase(dto.getEmail())) {
+            throw new IllegalArgumentException("Email is already registered.");
+        }
+
+        // ── 4. Create UserAuth ───────────────────────────────────────────────
         UserAuth userAuth = UserAuth.builder()
                 .username(dto.getUsername())
                 .email(dto.getEmail())
@@ -97,7 +105,7 @@ public class AuthService {
 
         userAuth = userAuthRepo.save(userAuth);
 
-        // ── 4. Create UserProfile (birthDate / gender / address) ─────────────
+        // ── 5. Create UserProfile (birthDate / gender / address) ─────────────
         if (dto.getBirthDate() != null || dto.getGender() != null || dto.getAddress() != null) {
             UserProfile profile = UserProfile.builder()
                     .userAuth(userAuth)
@@ -108,14 +116,14 @@ public class AuthService {
             userProfileRepository.save(profile);
         }
 
-        // ── 5. Activate the node ─────────────────────────────────────────────
+        // ── 6. Activate the node ─────────────────────────────────────────────
         if (node != null) {
             node.setUserId(userAuth.getId());
             node.setStatus(TreeNodeStatus.ACTIVATED);
             nodeRepo.save(node);
         }
 
-        // ── 6. Issue JWT ─────────────────────────────────────────────────────
+        // ── 7. Issue JWT ─────────────────────────────────────────────────────
         UserAuthAdapter userAuthAdapter = new UserAuthAdapter(userAuth);
         TokenExpiryDto tokenWithExpiry = jwtService.generateToken(userAuthAdapter);
 
@@ -196,6 +204,15 @@ public class AuthService {
     public boolean isUsernameAvailable(String username) {
         if (username == null || username.isBlank()) return false;
         return !userAuthRepo.existsByUsernameIgnoreCase(username.trim());
+    }
+
+    /**
+     * Returns true when the email is not yet registered (case-insensitive).
+     * Used by the registration form for real-time availability feedback.
+     */
+    public boolean isEmailAvailable(String email) {
+        if (email == null || email.isBlank()) return false;
+        return !userAuthRepo.existsByEmailIgnoreCase(email.trim());
     }
 
 }
