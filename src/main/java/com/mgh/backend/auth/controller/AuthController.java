@@ -99,4 +99,14 @@ public class AuthController {
         boolean available = authService.isEmailAvailable(email);
         return ResponseEntity.ok(Map.of("available", available));
     }
+
+    /**
+     * Public endpoint – no authentication required.
+     * Returns {"available": true} when the phone number is free, {"available": false} when taken.
+     */
+    @GetMapping("/check-phone")
+    public ResponseEntity<Map<String, Boolean>> checkPhone(@RequestParam String phone) {
+        boolean available = authService.isPhoneAvailable(phone);
+        return ResponseEntity.ok(Map.of("available", available));
+    }
 }

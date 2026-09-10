@@ -90,6 +90,10 @@ public class AuthService {
         if (userAuthRepo.existsByEmailIgnoreCase(dto.getEmail())) {
             throw new IllegalArgumentException("Email is already registered.");
         }
+        if (dto.getPhone() != null && !dto.getPhone().isBlank() &&
+                userAuthRepo.existsByPhone(dto.getPhone().trim())) {
+            throw new IllegalArgumentException("Phone number is already registered.");
+        }
 
         // ── 4. Create UserAuth ───────────────────────────────────────────────
         UserAuth userAuth = UserAuth.builder()
@@ -213,6 +217,15 @@ public class AuthService {
     public boolean isEmailAvailable(String email) {
         if (email == null || email.isBlank()) return false;
         return !userAuthRepo.existsByEmailIgnoreCase(email.trim());
+    }
+
+    /**
+     * Returns true when the phone number is not yet registered.
+     * Used by the registration form for real-time availability feedback.
+     */
+    public boolean isPhoneAvailable(String phone) {
+        if (phone == null || phone.isBlank()) return false;
+        return !userAuthRepo.existsByPhone(phone.trim());
     }
 
 }

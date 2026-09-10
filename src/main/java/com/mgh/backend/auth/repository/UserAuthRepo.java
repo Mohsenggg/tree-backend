@@ -14,4 +14,6 @@ public interface UserAuthRepo extends JpaRepository<UserAuth, Long> {
     boolean existsByUsernameIgnoreCase(String username);
 
     boolean existsByEmailIgnoreCase(String email);
+
+    boolean existsByPhone(String phone);
 }
